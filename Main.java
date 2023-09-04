@@ -1,24 +1,19 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferStrategy;
+
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Main {
-    static ArrayList<Particle> particles = new ArrayList<>();
+    static ArrayList<Particle> particles = new ArrayList<>(); // creates an ArrayList of Particle objects to hold all particles
     public static void main(String[] args){
-        Scanner scannerIn = new Scanner(System.in);
-        System.out.println("Enter number of particles:");
 
-        int n = Integer.parseInt(scannerIn.next());
-        for (int i = 0; i < n; i++) {
+        int n = 10000; // sets the number of particles to be created
+
+        for (int i = 0; i < n; i++) 
             particles.add(new Particle(i, i));
-        }
+        
+        
+        new MyWindow(1024, 512); // creates a new window to display the particles
 
-
-
-        MyWindow window = new MyWindow(900, 500);
-
+        System.out.println("The number of particles created is " + n);
 
     }
 }

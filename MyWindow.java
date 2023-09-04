@@ -1,16 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.text.AttributedCharacterIterator;
 import java.util.*;
 import java.awt.image.BufferStrategy;
 import java.util.Timer;
-//import javafx.*;
 
 public class MyWindow extends JFrame {
     Timer timer = new Timer();
@@ -20,22 +13,15 @@ public class MyWindow extends JFrame {
     int numberOfParticles;
 
     Graphics2D g;
-
-    //    Timer networkTimer = new Timer();
-//    ServerSocket serverSocket;
-//    Socket socket;
     String data;
 
     Point scaledMousePosition = new Point(0, 0);
     public MyWindow(int w, int h) {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(w, h);
-        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); setSize(w, h); setVisible(true);
 
         numberOfParticles = Main.particles.size();
 
-        Canvas c = new Canvas();
-        add(c);
+        Canvas c = new Canvas(); add(c);
         c.createBufferStrategy(2);
         BufferStrategy bs = c.getBufferStrategy();
 
@@ -110,48 +96,8 @@ public class MyWindow extends JFrame {
             }
         });
 
-
-
-//        Thread network = new Thread(){
-//            @Override
-//            public void run() {
-//                super.run();
-//
-////
-//                try {
-//                    serverSocket = new ServerSocket(1231);
-////                    serverSocket.accept();
-//                    socket = serverSocket.accept();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                networkTimer.scheduleAtFixedRate(new TimerTask() {
-//                    @Override
-//                    public void run() {
-//
-//                        try {
-//                            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-//
-//                            out.writeUTF(data);
-//
-//                            DataInputStream in = new DataInputStream(socket.getInputStream());
-//                            scaledMousePosition.x = (int)(in.readFloat()*(float) getWidth());
-//                            scaledMousePosition.y = (int)(in.readFloat()*(float) getHeight());
-//
-//
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }, 0, 1000/60);
-//            }
-//        };
-//        network.start();
-
-
         g = (Graphics2D) bs.getDrawGraphics();
         g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -179,23 +125,6 @@ public class MyWindow extends JFrame {
                 bs.show();
 
 
-                //get mouse location on the screen
-//                Point mousePosition = MouseInfo.getPointerInfo().getLocation();
-                //adjest mouse location for scale
-//                scaledMousePosition = new Point((int)((float)mousePosition.x/scale), (int)((float)mousePosition.y/scale));
-//            for (int i = 0; i < getWidth(); i+=50) {
-//                for (int j = 0; j < getHeight(); j+=50) {
-//                    float dx = mousePosition.x - i;
-//                    float dy = mousePosition.y - j;
-//                    float d = Math.sqrt(dx*dx+dy*dy);
-//
-//                    if(d>255)
-//                        d=255;
-//
-//                    g.setColor(new Color( 255, 255, 255, 255-(int)d));
-//                    g.fillRect(i-1, j-1, 2, 2);
-//                }
-//
             }
         }, 0, 1000/60);
 
@@ -231,3 +160,4 @@ public class MyWindow extends JFrame {
         }
     }
 }
+
