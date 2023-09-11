@@ -1,128 +1,72 @@
+//Created May 2020 by Daniil Grubich
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Timer;
 
 public class MyWindow extends JFrame {
     Timer timer = new Timer();
-    float sensitivity = 1;
-    float colorAngle = 0;
-    float scale = 1;
-    int numberOfParticles;
+    
+    static float scale = 1;
+    static float hColor = 0;
+    static Dimension bounds = new Dimension();
+    static boolean trace = false;
+    
+    static float sensitivity = 1;
 
-    Graphics2D g;
-    String data;
+    static Canvas c;
+    static Graphics2D g;
+    static BufferStrategy bs;
+    static boolean toSave = false;
 
-    Point scaledMousePosition = new Point(0, 0);
+    static Point scaledMousePosition = new Point(0, 0);
     public MyWindow(int w, int h) {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); setSize(w, h); setVisible(true);
+        super("Particles 2"); 
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        setSize(w, h); 
+        if (Main.fullscreen) {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+            setUndecorated(true);
+        }
+        setVisible(true);
 
-        numberOfParticles = Main.particles.size();
-
-        Canvas c = new Canvas(); add(c);
+        c = new Canvas(); add(c);
         c.createBufferStrategy(2);
-        BufferStrategy bs = c.getBufferStrategy();
+        bs = c.getBufferStrategy();
 
-        c.addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if(e.getWheelRotation()>0) sensitivity *=.9; else sensitivity *=1.1;
-            }
-        });
+        c.addMouseWheelListener(new MouseWheelHandlerClass());
+        c.addMouseMotionListener(new MouseMotionHandlerClass());
+        c.addKeyListener(new KeyHandlerClass());
 
-        c.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                scaledMousePosition.x = (int) (e.getX()/scale);
-                scaledMousePosition.y = (int) (e.getY()/scale);
-            }
-        });
-
-        c.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_C){
-                    for (Particle p: Main.particles) {
-                        p.oldX = p.x;
-                        p.oldY = p.y;
-
-                        float dx = scaledMousePosition.x-p.x;
-                        float dy = -scaledMousePosition.y+p.y;
-                        float r = (float) Math.sqrt(dx*dx+dy*dy);
-
-                        p.assinnedVx = dy * (float) Math.pow(sensitivity,1f/2f) / (float) Math.pow(r, 1f/2f);
-                        p.assignedVy = dx * (float) Math.pow(sensitivity,1f/2f) / (float) Math.pow(r, 1f/2f);
-
-                    }
-                }else if(e.getKeyCode() == KeyEvent.VK_R) {
-                    for (Particle p : Main.particles) {
-                        p.x = (int) (Math.random() * (float) getWidth()/scale);
-                        p.y = (int) (Math.random() * (float) getHeight()/scale);
-
-                        p.oldX = p.x;
-                        p.oldY = p.y;
-                    }
-                }else if(e.getKeyCode() == KeyEvent.VK_MINUS) {
-                    scale /= 2;
-                    g.scale(scale, scale);
-                }else if(e.getKeyCode() == KeyEvent.VK_EQUALS){
-                    scale *= 2;
-                    g.scale(scale, scale);
-                }else if(e.getKeyCode() == KeyEvent.VK_P) {
-                    for (Particle p : Main.particles) {
-                        float newX = (float) Math.cos(Math.random() * 2f * 3.1415f) * 200 + scaledMousePosition.x;
-                        float newY = (float) Math.sin(Math.random() * 2f * 3.1415f) * 200 + scaledMousePosition.y;
-                        p.x = newX;
-                        p.y = newY;
-                        p.oldX = newX;
-                        p.oldY = newY;
-
-
-                        float dx = scaledMousePosition.x - p.x;
-                        float dy = -scaledMousePosition.y + p.y;
-                        float r = (float) Math.sqrt(dx * dx + dy * dy);
-
-                        //todo add sensitivity and radius power to the setting window
-                        p.assinnedVx = dy * (float) Math.pow(sensitivity,1f/2f) / (float) Math.pow(r, 1f/2f);
-                        p.assignedVy = dx * (float) Math.pow(sensitivity,1f/2f) / (float) Math.pow(r, 1f/2f);
-
-                    }
-                }
-
-
-                    
-            }
-        });
-
-        g = (Graphics2D) bs.getDrawGraphics();
-        g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+        
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                colorAngle+=.1;
-                if(colorAngle>=360)
-                    colorAngle-=360;
+                g = (Graphics2D) bs.getDrawGraphics();
+                g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+                updateBackgroud(); 
+                addParametersLabel();
+                
 
-                data = String.format("Number of particles: %d \n" +
-                        "Sensitivity: %f \n" +
-                        "Scale: %f\n"+
-                        "X: %d\n"+
-                        "Y: %d", numberOfParticles, sensitivity, scale, scaledMousePosition.x, scaledMousePosition.y);
+                g.scale(scale, scale);
+                bounds = new Dimension((int)((float)getWidth()/scale), (int)((float)getHeight()/scale));
 
-                Dimension bounds = new Dimension((int)((float)getWidth()/scale), (int)((float)getHeight()/scale));
-
-
-
-                updatePartcles(Main.particles, scaledMousePosition.x, scaledMousePosition.y, sensitivity, bounds);
-                updateBackgroud(bounds,  g);
-
-                addParametersLabel(data, g, scaledMousePosition.x, scaledMousePosition.y, bounds, scale);
-                displayParticles(Main.particles, colorAngle, g);
+                updatePartcles();
+                displayParticles();
 
                 bs.show();
+
+                if(toSave){
+                    saveScreen();
+                    toSave = false;
+                }
+    
 
 
             }
@@ -130,33 +74,64 @@ public class MyWindow extends JFrame {
 
     }
 
-    public void addParametersLabel(String label, Graphics2D g, float attractX, float attractY, Dimension bounds, float scale){
-        g.setFont(new Font("courier new", Font.PLAIN, (int) (10/scale)));
-        g.setColor(new Color(7, 122, 25));
-        g.drawString(label, 5f/scale, (float) bounds.height - 40f/scale );
+    public void addParametersLabel(){
+        String label = String.format("Number of particles: %5d |" +
+                        "Sensitivity: %5f |" +
+                        "Scale: %5f |"+
+                        "X: %5d |"+
+                        "Y: %5d", Main.particles.size(), sensitivity, scale, scaledMousePosition.x, scaledMousePosition.y);
+        
+        g.setFont(new Font("courier new", Font.PLAIN, (int) (15)));
+        g.setColor(new Color(0, 255, 0) );
+        g.drawString(label, 0, 15f);
 
-        g.fillOval((int)attractX-2, (int)attractY-2, 4, 4);
 
     }
 
-    private void displayParticles(ArrayList<Particle> particles, float colorAngle, Graphics2D g) {
-        g.setColor(ColorRotaion.getColor(colorAngle));
-        for (Particle p : particles) {
+    private void displayParticles() {
+        if(hColor>1) hColor=0.f; else hColor+=.0005f;
+        g.setColor(Color.getHSBColor(hColor, 1.f, 1.f));
+        for (Particle p : Main.particles) {
             g.drawLine((int)p.x, (int)p.y,(int)p.x, (int)p.y);
+        }
+
+    }
+
+    private void updateBackgroud() {
+        g.setColor(new Color(0, 0, 0, 100));
+        if(trace)
+            g.fillRect(0, 0, getWidth(), 20);
+        else
+            g.fillRect(0, 0, getWidth(), getHeight());
+    }
+
+    private void updatePartcles() {
+
+        for (Particle p : Main.particles) {
+            p.attract((float)scaledMousePosition.getX(), (float)scaledMousePosition.getY(), sensitivity, bounds);
+            p.assinnedVx=0;
+            p.assignedVy=0;
         }
     }
 
-    private void updateBackgroud(Dimension bounds, Graphics2D g) {
-        g.setColor(new Color(0, 0, 0, 100));
-        g.fillRect(0, 0, bounds.width, bounds.height);
-    }
+    public void saveScreen() {
+        try {
+            Robot robot = new Robot();
+    
+            Point contentLocation = this.getContentPane().getLocationOnScreen();
+            Dimension contentSize = this.getContentPane().getSize();
+    
+            Rectangle captureRect = new Rectangle(contentLocation.x, contentLocation.y, contentSize.width, contentSize.height);
+            BufferedImage capturedImage = robot.createScreenCapture(captureRect);
+            
+            //get current time and format it to string
+            Calendar cal = Calendar.getInstance();
+            String time = String.format("%1$tY-%1$tm-%1$td %1$tH-%1$tM-%1$tS", cal);
+            
 
-    private void updatePartcles(ArrayList<Particle> particles, float attractX, float attractY, float sensetivity, Dimension bounds) {
-
-        for (Particle p : particles) {
-            p.attract(attractX, attractY, sensetivity, bounds);
-            p.assinnedVx=0;
-            p.assignedVy=0;
+            ImageIO.write(capturedImage, "png", new File(time + ".png"));
+        } catch (Exception e) {
+            System.out.println("Error saving screenshot: " + e.getMessage());
         }
     }
 }
