@@ -79,7 +79,7 @@ public class MyWindow extends JFrame {
                         "Sensitivity: %5f |" +
                         "Scale: %5f |"+
                         "X: %5d |"+
-                        "Y: %5d", Main.particles.size(), sensitivity, scale, scaledMousePosition.x, scaledMousePosition.y);
+                        "Y: %5d | F1 - Help", Main.particles.size(), sensitivity, scale, scaledMousePosition.x, scaledMousePosition.y);
         
         g.setFont(new Font("courier new", Font.PLAIN, (int) (15)));
         g.setColor(new Color(0, 255, 0) );
