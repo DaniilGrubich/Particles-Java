@@ -77,6 +77,7 @@ class KeyHandlerClass extends KeyAdapter {
                     "'R': Reset Particles \n" +
                     "'C': Add Curl \n" +
                     "'P': Create Rectangular Curl \n" +
+                    "'S': Save Image \n" +
                     "'Esc': Close";
 
             JOptionPane.showMessageDialog(null, message);
